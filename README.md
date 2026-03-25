@@ -1,7 +1,3 @@
-Fair. Here’s a tighter, professional README—no fluff, no emojis, no filler.
-
----
-
 # Federal Workforce Attrition Study
 
 This project analyzes U.S. federal workforce data to study attrition across agencies and time. The current implementation provides a data ingestion layer that loads raw OPM datasets into pandas DataFrames.
