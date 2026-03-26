@@ -57,9 +57,18 @@ separations_202601_1_2026-03-25.txt
 
 Create and activate a virtual environment:
 
+## Mac & Linux
+
 ```
 python3 -m venv .venv
 source .venv/bin/activate
+```
+
+## Windows
+
+```
+python3 -m venv .venv
+.venv\bin\activate
 ```
 
 Install dependencies:
