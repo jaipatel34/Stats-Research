@@ -120,9 +120,18 @@ df = load_r2_data("employment",  year=2024, month=6)
 python scripts/opm_to_r2.py scan --start 2024-01 --end 2026-02
 ```
 
-**Run the pipeline** (use `caffeinate` to prevent macOS sleep):
+**Run the pipeline:**
+
+Mac (use `caffeinate` to prevent sleep):
 ```bash
 caffeinate -i python scripts/opm_to_r2.py run --start 2024-01 --end 2026-02
+```
+
+Windows (prevent sleep by running this first, then reset after):
+```powershell
+powercfg /change standby-timeout-ac 0
+python scripts/opm_to_r2.py run --start 2024-01 --end 2026-02
+powercfg /change standby-timeout-ac 30
 ```
 
 **Options:**
