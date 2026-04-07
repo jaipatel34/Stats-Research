@@ -3,3 +3,5 @@ numpy
 statsmodels
 scikit-learn
 jupyter
+boto3
+playwright
