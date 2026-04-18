@@ -47,7 +47,12 @@ def _r2():
 # R2 loader  (primary — reads from your bucket)
 # ---------------------------------------------------------------------------
 
-def load_r2_data(data_type: str, year: int = None, month: int = None) -> pd.DataFrame:
+def load_r2_data(
+    data_type: str,
+    year: int = None,
+    month: int = None,
+    agg_cols: list = None,
+) -> pd.DataFrame:
     """
     Load federal workforce data directly from R2.
 
@@ -56,6 +61,8 @@ def load_r2_data(data_type: str, year: int = None, month: int = None) -> pd.Data
     data_type : "employment" | "accessions" | "separations"
     year      : filter to a specific year (None = all years)
     month     : filter to a specific month (None = all months)
+    agg_cols  : if provided, groupby these columns and sum 'count' per file
+                before accumulating — keeps memory flat across many months
 
     Returns a concatenated DataFrame with added year/month columns.
 
@@ -102,10 +109,14 @@ def load_r2_data(data_type: str, year: int = None, month: int = None) -> pd.Data
         print(f"  loading {key} …")
         obj = client.get_object(Bucket=BUCKET, Key=key)
         buf = BytesIO(obj["Body"].read())
-        df = pd.read_csv(buf, sep="|", low_memory=False)
+        usecols = (agg_cols + ["count"]) if agg_cols else None
+        df = pd.read_csv(buf, sep="|", low_memory=False, usecols=usecols)
         df["year"]      = ky
         df["month"]     = km
         df["data_type"] = data_type
+        if agg_cols:
+            group_keys = agg_cols + ["year", "month", "data_type"]
+            df = df.groupby(group_keys, dropna=False)["count"].sum().reset_index()
         dfs.append(df)
 
     return pd.concat(dfs, ignore_index=True)
