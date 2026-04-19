@@ -11,4 +11,7 @@ dependencies = [
     "boto3>=1.42",
     "playwright>=1.58",
     "pyarrow>=21.0",
+    "matplotlib>=3.9",
+    "scipy>=1.13",
+    "linearmodels>=7.0",
 ]

@@ -8,35 +8,50 @@ Data is ingested from the U.S. Office of Personnel Management (OPM) and stored i
 
 ## Research Question
 
-> Did the 2025 federal workforce restructuring driven by DOGE disproportionately affect specific employee profiles and agencies, and can pre-restructuring workforce characteristics predict which agencies and employee groups experienced the highest separation rates during this period?
+> Did the 2025 federal workforce restructuring driven by DOGE disproportionately affect specific employee profiles and agencies, and did it produce a chilling effect on voluntary departures beyond the explicit involuntary removals?
 
-### Analysis Plan
+### Analysis Design
 
-**Separations (`separations.ipynb`)**
-- Classify separations as voluntary (quits, retirements, transfers) vs involuntary (RIF, terminations)
-- Track involuntary separation rate month-by-month to isolate the DOGE signal from seasonal effects
-- Identify which agencies drove RIF activity — USAID, FDA, NIH, State Dept, CDC are primary targets
-- Profile who was involuntarily separated by age, tenure, pay plan, and appointment type
+Three-period natural experiment using OPM administrative data (Jan 2024–Feb 2026, 558 agency subelements):
+- **Pre-DOGE**: Jan–Dec 2024 — clean baseline before EO 14210
+- **DOGE Active**: Jan–Nov 2025 — EO 14210 in effect
+- **Post-DOGE**: Dec 2025–Feb 2026 — 3-month recovery window
 
-**Employment (`employment.ipynb`)**
-- Use monthly workforce snapshots as the denominator to compute true separation rates per agency
-- Establish pre-DOGE baseline workforce characteristics (size, age distribution, tenure mix) by agency
-- Track net headcount change over time per agency
+**Models**: Aggregate ITS, Panel ITS (agency FE + seasonal controls), event study, agency-specific linear trends (Frisch-Waugh), negative binomial count model, and chi-square demographic disparity tests. Both involuntary and voluntary separation streams analyzed separately.
 
-**Combined Analysis (`doge_analysis.ipynb`)**
-- Join separations to employment to compute agency-level separation rates
-- Regression: do pre-DOGE workforce characteristics (% temporary, % young, % non-tenured) predict involuntary separation rate?
-- Identify agencies experiencing net workforce collapse (high separations + large headcount loss)
+### Key Findings
 
-### Key Findings So Far
+**Voluntary separations are the dominant signal**
+- Voluntary exits outnumbered involuntary 6-to-1 during DOGE (269,260 vs 43,881)
+- Voluntary rate: 0.64%/month baseline → 1.11% DOGE → 1.27% post-DOGE (still elevated)
+- Agency-specific trends model: voluntary `doge_active` = **+1.03pp above trend, p = 0.009**; `post_doge` = **+1.48pp, p = 0.007**
+- Kruskal-Wallis for voluntary rates across three periods: **p = 0.049** (significant); involuntary: p = 0.132 (not significant)
+- Firings stopped when DOGE ended; voluntary departures continued — consistent with a lasting chilling effect
 
-- **Federal workforce has shrunk ~285,000 workers** since Sep 2024 — from ~2.31M to ~2.03M by Feb 2026 (-12.3%)
-- **September 2025 spike was voluntary, not DOGE** — 123k separations but 94% were quits/retirements; involuntary rate was only 4.9%
-- **July 2025 was the DOGE peak** — 36% involuntary rate, 5,392 RIFs in a single month (vs ~1 in Jan–Feb 2025)
-- **USAID was essentially gutted** — 94.7% headcount loss (4,831 → 256 people); 114% peak involuntary separation rate
-- **Defense Human Resources Activity accelerating** — 118% peak involuntary rate, 1,200 involuntary seps in Jan–Feb 2026 vs 362 in all of 2025
-- **Young and non-tenured workers bear the brunt** — 20–29 year olds dropped from 9% → 7.85% of the workforce; probationary/term workers were cut first
-- **Career civil servants are surviving** — tenure group 1 (permanent) rose from 75% → 81.4% of the remaining workforce
+**Involuntary targeting was legally concentrated, not aggregate-significant**
+- Aggregate rate 0.115% → 0.180%/month, but does not survive agency-trend controls (Panel ITS `doge_level` p = 0.184)
+- The post-DOGE *fall* is significant (Panel ITS `post_level` p = 0.016)
+- Involuntary targeting was concentrated in workers with the fewest civil service protections
+
+**Demographic targeting was systematic — two distinct profiles (all chi-square p ≈ 0)**
+
+| Stream | Who was overrepresented |
+|---|---|
+| Involuntary | No-tenure-group (+46.7pp), nonpermanent competitive (+21.4pp), ages 20–29 (+8–10pp), intermittent schedule (+17.9pp), HS or less (+7pp) |
+| Voluntary | Ages 65+ (+7.4pp), 60–64 (+5.7pp), career-conditional (+4.7pp) — consistent with early retirement pressure |
+
+Career permanent workers: −54.1pp involuntary overrepresentation (protected)
+
+**22 agencies experienced workforce collapse (≥20% headcount loss)**
+- USAID: **−93.8%** (4,752 → 294) — effectively eliminated
+- Defense Human Resources Activity: −49.2%; Federal Student Aid: −47.1%
+- CDC: −24.9%; FDA: −20.4%; IRS: −22.1%; Forest Service: −27.2%; National Park Service: −27.5%
+- Total federal headcount: ~2.30M → ~2.05M (**−11%, ~250,000 workers**)
+
+**Compositional shift appears permanent**
+- Career permanent (tenure group 1): 96.4% retained post-DOGE
+- No-tenure-group: 65.8% retained; probationary: 64.9% retained; workers 20–24: 70.1% retained
+- The workforce that remains is measurably older and more tenured than the 2024 baseline
 
 ---
 
@@ -191,5 +206,5 @@ powercfg /change standby-timeout-ac 30
 
 Managed via `pyproject.toml` (uv) or `requirements.txt` (pip):
 
-- pandas, numpy, statsmodels, scikit-learn
+- pandas, numpy, statsmodels, scikit-learn, linearmodels
 - jupyter, boto3, pyarrow, playwright
